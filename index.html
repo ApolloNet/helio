@@ -1,0 +1,103 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Helio</title>
+        <link rel="stylesheet" href="global.css">
+    </head>
+    <body>
+        <div class="wrapper">
+            <div>Date: <span class="js-date"></span></div>
+            <div>Héliograveur: <span class="js-operator"></span></div>
+            <canvas id="myChart"></canvas>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/public-google-sheets-parser@latest"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+        <script src=" https://cdn.jsdelivr.net/npm/date-fns@3.6.0/cdn.min.js "></script>
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+        <script>
+            const options = {useFormat: true}
+            const parser = new PublicGoogleSheetsParser('1uEuRDDmNpWXuvUKNRWtz-eyLPqHNvCoo8qzd59SR0KY', options)
+
+            parser.parse().then(gSheetData => {
+
+                const experiment = 0;
+
+                document.querySelector('.js-date').textContent = gSheetData[experiment]['Date'];
+                document.querySelector('.js-operator').textContent = gSheetData[experiment]['Héliograveur'];
+
+                const greyLevelsData = [];
+                for (let level = 100; level >= 0; level -= 5) {
+                    const levelStep = gSheetData[experiment]["Gris " + level];
+                    
+                    if (levelStep === undefined) {
+                        continue;
+                    }
+
+                    greyLevelsData.push({
+                        x: '1970-01-01T00:' + levelStep + '.000Z',
+                        y: level
+                    })
+                }
+
+                const bathData = [];
+                for (let bath = 1; bath <= 5; bath++) {
+                    const bathStep = gSheetData[experiment]["Bain " + bath];
+
+                    bathData.push({
+                        x: '1970-01-01T00:' + bathStep + '.000Z',
+                        y: 0
+                    })
+                }
+
+                const ctx = document.getElementById('myChart');
+            
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        datasets: [
+                            {
+                                label: '',
+                                data: greyLevelsData,
+                                backgroundColor: '#00f',
+                                borderColor: '#00f'
+                            },
+                            {
+                                label: '',
+                                data: bathData,
+                                backgroundColor: '#f00',
+                                borderColor: 'rgba(0,0,0,0)'
+                            }
+                        ]
+                    },
+                    options: {
+                        scales: {
+                            x: {
+                                type: 'time',
+                                time: {
+                                    displayFormats: {
+                                        minute: 'm'
+                                    },
+                                    unit: 'minute',
+                                    tooltipFormat: 'mm:ss'
+                                },
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1
+                                },
+                                max: '1970-01-01T00:30:00.000Z'
+                            },
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 5
+                                },
+                            }
+                        }
+                    }
+                });
+
+            })
+        </script>
+    </body>
+</html>
