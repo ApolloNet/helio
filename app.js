@@ -9,20 +9,86 @@ document.addEventListener('DOMContentLoaded', () => {
     const parser = new PublicGoogleSheetsParser('1uEuRDDmNpWXuvUKNRWtz-eyLPqHNvCoo8qzd59SR0KY', options)
 
     parser.parse().then(gSheetData => {
-        displayPrediction(gSheetData);
+        console.log(gSheetData)
+        initPredictionForm(gSheetData);
+        initPredictionSubmitForm(gSheetData);
 
         initExperimentSelect(gSheetData);
         displayExperimentGraph(gSheetData, 0);
     })
 });
 
-function displayPrediction(gSheetData) {
+function initPredictionForm(gSheetData) {
+    const params = {
+        'icc-profile': 'Profil ICC',
+        'film': 'Typon',
+        'printer': 'Imprimante',
+        'ink': 'Encre',
+        'gelatin': 'Gélatine',
+        'potassium-bichromate': 'Bichromate de potassium',
+        'copper-plate-thickness': 'Épaisseur de la plaque de cuivre',
+        'ferric-chloride-temperature': 'Température du perchlorure de fer',
+        'room-humidity': 'Hygrométrie de la pièce',
+        'film-density': 'Densité film',
+        'exposure': 'Insolation',
+    };
+
+    const form = document.querySelector('.js-form-prediction-inputs');
+
+    for (const [key, value] of Object.entries(params)) {
+        const optionsValues = [...new Map(gSheetData.map((line) => [line[value], line[value]])).values()];
+
+        optionsValues.sort();
+
+        let options = '';
+        optionsValues.forEach((value) => {
+            if (value !== undefined) {
+                options += `<option value="${value}">${value}</option>`;
+            }
+        })
+        
+        const selectHTML = `<div>
+            <label for="form-select-${key}">${value}</label>
+            <select name="form-select-${key}" class="js-select-${key}" data-label="${value}">
+                ${options}
+            </select>
+        </div>`;
+        form.innerHTML += selectHTML;
+    }
+}
+
+function initPredictionSubmitForm(gSheetData) {
+    const form = document.querySelector('.js-form-prediction');
+    form.addEventListener('submit', (event) => {
+        event.preventDefault();
+
+        const filters = [];
+
+        for (let i = 0; i < form.elements.length; ++i) {
+            const element = form.elements[i];
+            if (element.type === 'submit') {
+                continue;
+            }
+            filters.push([element.dataset.label, element.value]);
+        }
+
+        const data = gSheetData.filter((line) => {
+            return filters.every((filter) => {
+                return line[filter[0]] === filter[1];
+            });
+        });
+    
+        displayPrediction(data);
+    });
+}
+
+function displayPrediction(data) {
     const greyLevelsData = [];
     for (let level = 100; level >= 0; level -= 5) {
 
         const greyLevelTimes = [];
-        for (let line = 0; line < gSheetData.length; ++line) {
-            const userTime = gSheetData[line]["Gris " + level];
+        for (let line = 0; line < data.length; ++line) {
+            const userTime = data[line]["Gris " + level];
 
             if (userTime === undefined) {
                 continue;
@@ -30,6 +96,10 @@ function displayPrediction(gSheetData) {
 
             const time = new Date(`1970-01-01T00:${userTime}.000Z`).getTime();
             greyLevelTimes.push(time);
+        }
+
+        if (greyLevelTimes.length === 0) {
+            continue;
         }
 
         const sum = greyLevelTimes.reduce((a, b) => a + b, 0);
@@ -46,8 +116,8 @@ function displayPrediction(gSheetData) {
     for (let bath = 1; bath <= 5; bath++) {
 
         const bathTimes = [];
-        for (let line = 0; line < gSheetData.length; ++line) {
-            const userTime = gSheetData[line]["Bain " + bath];
+        for (let line = 0; line < data.length; ++line) {
+            const userTime = data[line]["Bain " + bath];
 
             if (userTime === undefined) {
                 continue;
