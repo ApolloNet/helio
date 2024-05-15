@@ -5,8 +5,8 @@ let charts = {
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    const options = {useFormat: true}
-    const parser = new PublicGoogleSheetsParser('1uEuRDDmNpWXuvUKNRWtz-eyLPqHNvCoo8qzd59SR0KY', options)
+    const options = {useFormat: true};
+    const parser = new PublicGoogleSheetsParser(googleSheetId, options);
 
     parser.parse().then(gSheetData => {
         initPredictionForm(gSheetData);
