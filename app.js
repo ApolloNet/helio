@@ -9,7 +9,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const parser = new PublicGoogleSheetsParser('1uEuRDDmNpWXuvUKNRWtz-eyLPqHNvCoo8qzd59SR0KY', options)
 
     parser.parse().then(gSheetData => {
-        console.log(gSheetData)
         initPredictionForm(gSheetData);
         initPredictionSubmitForm(gSheetData);
 
