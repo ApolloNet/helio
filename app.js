@@ -28,7 +28,7 @@ function initPredictionForm(gSheetData) {
         'copper-plate-thickness': 'Épaisseur de la plaque de cuivre',
         'ferric-chloride-temperature': 'Température du perchlorure de fer',
         'room-humidity': 'Hygrométrie de la pièce',
-        'film-density': 'Densité film',
+        'film-density': 'Densité du film',
         'exposure': 'Insolation',
     };
 
